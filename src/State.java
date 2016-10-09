@@ -19,26 +19,34 @@ class State {
         return rewardAmount;
     }
 
-    Pair<Integer, Double> argMax(double[] jValues, int numOfActions, int i) {
-        double maxExpected = 0.0;
+    Pair<Integer, Double> argMax(double[] jValues) {
         int bestAction = 1;
 
-        if (i == 1)
-            return new Pair<>(bestAction, maxExpected);
+        Map<Integer, Double> expectedFutureRewards = new HashMap<>();
 
+        for (Map.Entry<String, Double> entry : transitionProbMap.entrySet()) {
+            final String key = entry.getKey();
+            final int sIndex = key.indexOf('s');
+            final int actionNum = Integer.parseInt(key.substring(key.indexOf('a') + 1, sIndex));
+            final int stateNum = Integer.parseInt(key.substring(sIndex + 1, key.length()));
 
-        for (int a = 1; a <= numOfActions; ++a) {
-            double expected = 0.0;
-            for (int s = 1; s <= jValues.length; ++s) {
-                String key = "a" + a + "s" + s;
-                if (transitionProbMap.containsKey(key)) {
-                    double prob = transitionProbMap.get(key);
-                    expected += prob * jValues[s - 1];
-                }
+            double transitionProbability = entry.getValue();
+            if (expectedFutureRewards.containsKey(actionNum)) {
+                double currentRewards = expectedFutureRewards.get(actionNum);
+                expectedFutureRewards.put(actionNum, currentRewards + transitionProbability * jValues[stateNum - 1]);
+            } else {
+                expectedFutureRewards.put(actionNum, transitionProbability * jValues[stateNum - 1]);
             }
-            if (expected > maxExpected) {
-                bestAction = a;
-                maxExpected = expected;
+        }
+
+        Double maxExpected = null;
+        for (Map.Entry<Integer, Double> entry : expectedFutureRewards.entrySet()) {
+            if (maxExpected == null) {
+                bestAction = entry.getKey();
+                maxExpected = entry.getValue();
+            } else if (entry.getValue() > maxExpected) {
+                bestAction = entry.getKey();
+                maxExpected = entry.getValue();
             }
         }
         return new Pair<>(bestAction, maxExpected);

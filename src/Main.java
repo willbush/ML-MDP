@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The entry point of the application.
@@ -26,61 +27,56 @@ public class Main {
             System.out.println(PROGRAM_USAGE);
             System.exit(1);
         }
+
         try {
             int numOfStates = Integer.parseInt(args[0]);
-            int numOfActions = Integer.parseInt(args[1]);
+            // args[1] is number of actions and I don't need it.
             String inputFilePath = args[2];
             double discountFactor = Double.parseDouble(args[3]);
 
-            start(numOfStates, numOfActions, inputFilePath, discountFactor);
+            start(numOfStates, inputFilePath, discountFactor);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println(PROGRAM_USAGE);
         }
     }
 
-    static void start(int numOfStates, int numOfActions, String inputFilePath, double discountFactor) throws IOException {
-        List<String> lines = getLines(inputFilePath);
-        final int[] stateRewards = getRewards(numOfStates, lines);
-        final double[][] probabilityMatrix = getProbabilityMatrix(numOfActions, numOfStates, lines);
+    static void start(int numOfStates, String inputFilePath, double discountFactor) throws IOException {
+        final List<State> states = getStates(numOfStates, getLines(inputFilePath));
+
+        MDP mdp = new MDP(states, discountFactor);
+        mdp.performValueIteration();
     }
 
-    private static int[] getRewards(int numOfStates, List<String> lines) {
+    private static List<State> getStates(int numOfStates, List<String> lines) {
         if (lines.size() != numOfStates) {
             final String error = "The number of states parsed from the file does not match the give number of states.";
             throw new IllegalArgumentException(error);
         }
-
-        int[] stateRewards = new int[numOfStates];
-
-        int rewardIndex = 0;
-
-        for (String line : lines) {
-            String[] elements = line.split(SPLIT_REGEX);
-            int reward = Integer.parseInt(elements[0].split("\\s+")[1]);
-            stateRewards[rewardIndex++] = reward;
-        }
-        return stateRewards;
+        return lines.stream().map(Main::getState).collect(Collectors.toList());
     }
 
-    private static double[][] getProbabilityMatrix(int numOfActions, int numOfStates, List<String> lines) {
-        double[][] probabilityMatrix = new double[numOfActions][numOfStates];
+    private static State getState(String line) {
+        State.Builder stateBuilder = State.Builder(getReward(line));
 
-        for (String line : lines) {
-            final String regex = "\\(([^)]+)\\)"; // matches everything between ( and ).
-            Matcher m = Pattern.compile(regex).matcher(line);
+        final String regex = "\\(([^)]+)\\)"; // matches everything between ( and ).
+        Matcher m = Pattern.compile(regex).matcher(line);
 
-            while (m.find()) {
-                String[] tokens = m.group(1).trim().split("\\s+");
-                // get the index of the action and state and decrement it to make it zero based.
-                int actionIndex = Integer.parseInt(tokens[0].substring(1, 2)) - 1;
-                int stateIndex = Integer.parseInt(tokens[1].substring(1, 2)) - 1;
-                double probability = Double.parseDouble(tokens[2]);
+        while (m.find()) {
+            String[] tokens = m.group(1).trim().split("\\s+");
+            // get the index of the action and state and decrement it to make it zero based.
 
-                probabilityMatrix[actionIndex][stateIndex] = probability;
-            }
+            String actionNum = tokens[0];
+            String stateNum = tokens[1];
+            double transitionProb = Double.parseDouble(tokens[2]);
+            stateBuilder.put(actionNum + stateNum, transitionProb);
         }
-        return probabilityMatrix;
+        return stateBuilder.build();
+    }
+
+    private static int getReward(String line) {
+        String[] elements = line.split(SPLIT_REGEX);
+        return Integer.parseInt(elements[0].split("\\s+")[1]);
     }
 
     private static List<String> getLines(String path) throws IOException {

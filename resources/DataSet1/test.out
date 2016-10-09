@@ -1,5 +1,5 @@
 After iteration 1:
-(s1 a1 0.0000) (s2 a2 0.0000) (s3 a2 10.0000) (s4 a2 10.0000) 
+(s1 a1 0.0000) (s2 a1 0.0000) (s3 a1 10.0000) (s4 a1 10.0000) 
 After iteration 2:
 (s1 a1 0.0000) (s2 a2 4.5000) (s3 a2 19.0000) (s4 a2 14.5000) 
 After iteration 3:
@@ -38,3 +38,4 @@ After iteration 19:
 (s1 a1 26.1817) (s2 a2 33.2006) (s3 a2 48.7981) (s4 a2 38.6208) 
 After iteration 20:
 (s1 a1 26.7220) (s2 a2 33.7409) (s3 a2 49.3385) (s4 a2 39.1611) 
+
