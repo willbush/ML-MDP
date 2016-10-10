@@ -1,5 +1,3 @@
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -43,9 +41,11 @@ class MDP {
 
     private void printIterationResult(int i, int j) {
         System.out.println(String.format("After iteration %s:", i));
-        for (int state_i = 0; state_i < states.size(); ++state_i) {
-            System.out.print(String.format("(s%s a%s %.4f) ", (state_i + 1), bestActions[state_i], jTable[j][state_i]));
-        }
+        DecimalFormat df = new DecimalFormat("0.0000");
+
+        for (int state_i = 0; state_i < states.size(); ++state_i)
+            System.out.print(String.format("(s%s a%s %s) ", (state_i + 1), bestActions[state_i], df.format(jTable[j][state_i])));
+
         System.out.println();
     }
 }
