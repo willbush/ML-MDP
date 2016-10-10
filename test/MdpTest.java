@@ -1,10 +1,7 @@
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Scanner;
 
 public class MdpTest {
@@ -33,12 +30,23 @@ public class MdpTest {
     }
 
     @Test
+    public void valueIteration_worksOnExtraWhiteSpaceDataSet1() throws IOException {
+        final String path = "resources/dataFormatTest/extraWhiteSpace.in";
+        final int numOfStates = 4;
+        Main.start(numOfStates, path, DISCOUNT_FACTOR);
+        final String outputPath = "resources/DataSet1/test.out";
+        final String expectedOutput = readFile(outputPath);
+
+        Assert.assertEquals(expectedOutput, out.toString());
+    }
+
+    @Test
     public void valueIteration_worksOnDataSet1() throws IOException {
         final String path = "resources/DataSet1/test.in";
         final int numOfStates = 4;
         Main.start(numOfStates, path, DISCOUNT_FACTOR);
         final String outputPath = "resources/DataSet1/test.out";
-        final String expectedOutput = new Scanner(new File(outputPath)).useDelimiter("\\Z").next();
+        final String expectedOutput = readFile(outputPath);
 
         Assert.assertEquals(expectedOutput, out.toString());
     }
@@ -49,7 +57,7 @@ public class MdpTest {
         final int numOfStates = 10;
         Main.start(numOfStates, path, DISCOUNT_FACTOR);
         final String outputPath = "resources/DataSet2/test2.out";
-        final String expectedOutput = new Scanner(new File(outputPath)).useDelimiter("\\Z").next();
+        final String expectedOutput = readFile(outputPath);
 
         Assert.assertEquals(expectedOutput, out.toString());
     }
@@ -60,8 +68,12 @@ public class MdpTest {
         final int numOfStates = 4;
         Main.start(numOfStates, path, DISCOUNT_FACTOR);
         final String outputPath = "resources/DataSet3/test3.out";
-        final String expectedOutput = new Scanner(new File(outputPath)).useDelimiter("\\Z").next();
+        final String expectedOutput = readFile(outputPath);
 
         Assert.assertEquals(expectedOutput, out.toString());
+    }
+
+    private static String readFile(String path) throws FileNotFoundException {
+        return new Scanner(new File(path)).useDelimiter("\\Z").next();
     }
 }

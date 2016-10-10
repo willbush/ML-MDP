@@ -1,18 +1,28 @@
 import java.text.DecimalFormat;
 import java.util.List;
 
+/**
+ * This class simply performs value iteration on a markov decision process and
+ * prints the results after its done.
+ */
 class MDP {
     // This project has a predefined number of iterations to perform.
     private static final int NUM_OF_ITERATIONS = 20;
     private final List<State> states;
     private final double discountFactor;
+    // best action for a given state index.
     private final int[] bestActions;
+    // The table of J values. It has exactly two rows to alternate between for dynamic programming
+    // purposes. It has 2 rows because I cannot modify the j values in the table while looping over
+    // the states in value iteration, but I can at the end of an iteration. So instead of copying in
+    // a temporary array, I just alternate between using two rows.
     private final double[][] jTable;
 
     MDP(List<State> states, double discountFactor) {
         this.states = states;
         this.discountFactor = discountFactor;
-        jTable = new double[2][states.size()];
+        final int jTableRowCount = 2; // two rows to alternate between for dynamic programming.
+        jTable = new double[jTableRowCount][states.size()];
         bestActions = new int[states.size()];
     }
 
@@ -24,7 +34,7 @@ class MDP {
 
             for (int state_i = 0; state_i < states.size(); ++state_i) {
                 final State s = states.get(state_i);
-                final int reward = s.getRewardAmount();
+                final int reward = s.getReward();
 
                 if (i == 1) {
                     bestActions[state_i] = 1; // for the first iteration any action is fine.
@@ -32,7 +42,7 @@ class MDP {
                 } else {
                     Pair<Integer, Double> p = s.argMax(jTable[(i + 1) % 2]);
                     bestActions[state_i] = p.getLeft();
-                    jTable[j][state_i] = reward + (discountFactor * p.getRight());
+                    jTable[j][state_i] = reward + discountFactor * p.getRight();
                 }
             }
             printIterationResult(i, j);

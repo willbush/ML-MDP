@@ -2,26 +2,41 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents a State in a markov decision process.
+ */
 class State {
-    private final int rewardAmount;
+    private final int reward;
+    // A map where the key is an action a, state s.
+    // For example, key "a1s2", value 0.5 means action 1 transitions to state 2 with probability 0.5.
+    // Using a map here helps reduce the space time complexity since a 2d array of a * n.
+    // usually has a lot less than a * n transitions.
     private final Map<String, Double> transitionProbMap;
 
-    private State(int rewardAmount, Map<String, Double> transitionProbMap) {
-        this.rewardAmount = rewardAmount;
+    private State(int reward, Map<String, Double> transitionProbMap) {
+        this.reward = reward;
         this.transitionProbMap = transitionProbMap;
     }
 
+    /**
+     * I'm using the builder pattern here to build immutable states.
+     *
+     * @param rewardAmount State reward
+     * @return State builder.
+     */
     static Builder Builder(int rewardAmount) {
         return new Builder(rewardAmount);
     }
 
-    int getRewardAmount() {
-        return rewardAmount;
+    int getReward() {
+        return reward;
     }
 
     Pair<Integer, Double> argMax(double[] jValues) {
-        int bestAction = 1;
+        return getMaxRewardActionAndJvalue(getExpectedFutureRewards(jValues));
+    }
 
+    private Map<Integer, Double> getExpectedFutureRewards(double[] jValues) {
         Map<Integer, Double> expectedFutureRewards = new HashMap<>();
 
         for (Map.Entry<String, Double> entry : transitionProbMap.entrySet()) {
@@ -32,19 +47,24 @@ class State {
 
             double transitionProbability = entry.getValue();
             if (expectedFutureRewards.containsKey(actionNum)) {
-                double currentRewards = expectedFutureRewards.get(actionNum);
-                expectedFutureRewards.put(actionNum, currentRewards + transitionProbability * jValues[stateNum - 1]);
+                double currentExpectation = expectedFutureRewards.get(actionNum);
+                expectedFutureRewards.put(actionNum, currentExpectation + transitionProbability * jValues[stateNum - 1]);
             } else {
                 expectedFutureRewards.put(actionNum, transitionProbability * jValues[stateNum - 1]);
             }
         }
+        return expectedFutureRewards;
+    }
 
+    /**
+     * @param expectedFutureRewards map of actions to
+     * @return action number and J value pair.
+     */
+    private Pair<Integer, Double> getMaxRewardActionAndJvalue(Map<Integer, Double> expectedFutureRewards) {
+        int bestAction = 1;
         Double maxExpected = null;
         for (Map.Entry<Integer, Double> entry : expectedFutureRewards.entrySet()) {
-            if (maxExpected == null) {
-                bestAction = entry.getKey();
-                maxExpected = entry.getValue();
-            } else if (entry.getValue() > maxExpected) {
+            if (maxExpected == null || entry.getValue() > maxExpected) {
                 bestAction = entry.getKey();
                 maxExpected = entry.getValue();
             }

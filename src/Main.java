@@ -20,7 +20,7 @@ public class Main {
             "3rd argument: the input file path\n" +
             "4th argument: the discount factor\n\n" +
             "Example usage:\n" +
-            "java Main 4 4 ../resources/dataSet1/test.in 0.5";
+            "java Main 4 2 ../resources/DataSet1/test.in 0.9";
 
     public static void main(String[] args) {
         if (args.length != 4) {
@@ -35,7 +35,7 @@ public class Main {
             double discountFactor = Double.parseDouble(args[3]);
 
             start(numOfStates, inputFilePath, discountFactor);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             System.out.println(PROGRAM_USAGE);
         }
