@@ -66,10 +66,15 @@ public class Main {
             String[] tokens = m.group(1).trim().split("\\s+");
             // get the index of the action and state and decrement it to make it zero based.
 
-            String actionNum = tokens[0];
-            String stateNum = tokens[1];
+            String action = tokens[0];
+            String state = tokens[1];
+
+            Integer actionNum = Integer.parseInt(action.substring(action.indexOf('a') + 1, action.length()));
+            Integer stateNum = Integer.parseInt(state.substring(state.indexOf('s') + 1, state.length()));
+            Pair<Integer, Integer> actionToState = new Pair<>(actionNum, stateNum);
+
             double transitionProb = Double.parseDouble(tokens[2]);
-            stateBuilder.put(actionNum + stateNum, transitionProb);
+            stateBuilder.put(actionToState, transitionProb);
         }
         return stateBuilder.build();
     }

@@ -11,9 +11,9 @@ class State {
     // For example, key "a1s2", value 0.5 means action 1 transitions to state 2 with probability 0.5.
     // Using a map here helps reduce the space time complexity since a 2d array of a * n.
     // usually has a lot less than a * n transitions.
-    private final Map<String, Double> transitionProbMap;
+    private final Map<Pair<Integer, Integer>, Double> transitionProbMap;
 
-    private State(int reward, Map<String, Double> transitionProbMap) {
+    private State(int reward, Map<Pair<Integer, Integer>, Double> transitionProbMap) {
         this.reward = reward;
         this.transitionProbMap = transitionProbMap;
     }
@@ -39,11 +39,9 @@ class State {
     private Map<Integer, Double> getExpectedFutureRewards(double[] jValues) {
         Map<Integer, Double> expectedFutureRewards = new HashMap<>();
 
-        for (Map.Entry<String, Double> entry : transitionProbMap.entrySet()) {
-            final String key = entry.getKey();
-            final int sIndex = key.indexOf('s');
-            final int actionNum = Integer.parseInt(key.substring(key.indexOf('a') + 1, sIndex));
-            final int stateNum = Integer.parseInt(key.substring(sIndex + 1, key.length()));
+        for (Map.Entry<Pair<Integer, Integer>, Double> entry : transitionProbMap.entrySet()) {
+            final int actionNum = entry.getKey().getLeft();
+            final int stateNum = entry.getKey().getRight();
 
             double transitionProbability = entry.getValue();
             if (expectedFutureRewards.containsKey(actionNum)) {
@@ -74,14 +72,14 @@ class State {
 
     static class Builder {
         private final int rewardAmount;
-        private final Map<String, Double> transitionProbMap;
+        private final Map<Pair<Integer, Integer>, Double> transitionProbMap;
 
         Builder(int rewardAmount) {
             this.rewardAmount = rewardAmount;
             transitionProbMap = new HashMap<>();
         }
 
-        void put(String actionToStateKey, Double transitionProbability) {
+        void put(Pair<Integer, Integer> actionToStateKey, Double transitionProbability) {
             transitionProbMap.put(actionToStateKey, transitionProbability);
         }
 
